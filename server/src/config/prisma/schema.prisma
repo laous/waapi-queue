@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String       @id @default(auto()) @map("_id") @db.ObjectId
+  email    String       @unique
+  name     String?
+  password String
+  actions  UserAction[]
+  queue    Queue        @relation(fields: [queueId], references: [id])
+  queueId  String       @db.ObjectId
+}
+
+model Action {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  maxCredits Int
+}
+
+model Queue {
+  id      String        @id @default(auto()) @map("_id") @db.ObjectId
+  actions QueueAction[]
+  User    User[]
+}
+
+type QueueAction {
+  actionId   String
+  addedAt    DateTime  @default(now())
+  executed   Boolean   @default(false)
+  executedAt DateTime?
+}
+
+type UserAction {
+  actionId     String
+  credit       Int
+  calculatedAt DateTime @default(now())
+}
