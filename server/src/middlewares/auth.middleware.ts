@@ -1,26 +1,38 @@
 import prisma from '../config/prisma';
-import passport from 'passport';
-import { Strategy, ExtractJwt } from 'passport-jwt';
+import { NextFunction, Response } from 'express';
+import IRequestUser from '../interfaces/request-user.interface';
+import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const jwtOptions = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: JWT_SECRET,
-};
+export const jwtMiddleware = (
+  req: IRequestUser,
+  res: Response,
+  next: NextFunction
+) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-passport.use(
-  new Strategy(jwtOptions, async (payload, done) => {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { id: payload.userId },
-      });
-      done(null, user || false);
-    } catch (error) {
-      console.error(error);
-      done(error, false);
+  if (!token || !JWT_SECRET)
+    return res.sendStatus(401).json({ message: 'Unauthorized' });
+
+  jwt.verify(token, JWT_SECRET as string, async (err: Error, payload: any) => {
+    if (err || !payload) {
+      console.error(err);
+      return res.sendStatus(403).json({ message: 'Invalid token' });
     }
-  })
-);
+    const user = await prisma.user.findUnique({
+      where: {
+        id: payload.userId,
+      },
+      select: {
+        id: true,
+        email: true,
+      },
+    });
 
-export const jwtMiddleware = passport.authenticate('jwt', { session: false });
+    req.user = user;
+
+    next();
+  });
+};
