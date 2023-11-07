@@ -16,8 +16,7 @@ model User {
   name     String?
   password String
   actions  UserAction[]
-  queue    Queue        @relation(fields: [queueId], references: [id])
-  queueId  String       @db.ObjectId
+  queue    Queue?
 }
 
 model Action {
@@ -29,11 +28,12 @@ model Action {
 model Queue {
   id      String        @id @default(auto()) @map("_id") @db.ObjectId
   actions QueueAction[]
-  User    User[]
+  user    User          @relation(fields: [userId], references: [id])
+  userId  String        @unique @map("userId") @db.ObjectId
 }
 
 type QueueAction {
-  actionId   String
+  actionId   String    @map("actionId")
   addedAt    DateTime  @default(now())
   executed   Boolean   @default(false)
   executedAt DateTime?
