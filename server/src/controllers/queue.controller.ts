@@ -20,7 +20,7 @@ export const getQueue = async (req: IRequestUser, res: Response) => {
       },
     });
 
-    if (queue === null) {
+    if (!queue) {
       queue = await prisma.queue.create({
         data: {
           actions: [],

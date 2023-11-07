@@ -44,3 +44,9 @@ type UserAction {
   credit       Int
   calculatedAt DateTime @default(now())
 }
+
+model ExecutionTime {
+  id                        Int       @id @map("_id")
+  lastExecutionTime24Hours  DateTime?
+  lastExecutionTime2Minutes DateTime?
+}
