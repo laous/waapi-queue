@@ -37,7 +37,7 @@ export const getQueue = async (req: IRequestUser, res: Response) => {
       .sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime())
       .filter((action) => !action.executed);
 
-    res.status(200).json({ queue });
+    res.status(200).json(queue);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });
@@ -74,7 +74,7 @@ export const addQueueAction = async (req: IRequestUser, res: Response) => {
       },
     });
 
-    res.status(200).json({ queue });
+    res.status(200).json({ message: 'Action added to queue' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });

@@ -28,6 +28,7 @@ app.use('/api/v1', globalRouter);
 
 globalRouter.use('/queue', jwtMiddleware, queueRouter);
 globalRouter.use('/action', jwtMiddleware, actionRouter);
+globalRouter.use('/execution-time', jwtMiddleware, actionRouter);
 globalRouter.get('/', (req: Request, res: Response) => {
   res.send('Hello, Waapi!');
 });
