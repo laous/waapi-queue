@@ -7,7 +7,7 @@ import actionRouter from './routes/action.route';
 import { jwtMiddleware } from './middlewares/auth.middleware';
 import cron from 'node-cron';
 import { executeQueueActions } from './services/queue.service';
-import { calcluteUserActionsCreditForAllUsers } from './services/user.service';
+import { calculateUserActionsCreditForAllUsers } from './services/user.service';
 import {
   add24HoursExecutionTime,
   add2MinExecutionTime,
@@ -48,7 +48,7 @@ cron.schedule('*/2 * * * *', async () => {
 cron.schedule('0 0 * * *', async () => {
   try {
     console.log('Calculate user actions new credit every 24 hours');
-    await calcluteUserActionsCreditForAllUsers();
+    await calculateUserActionsCreditForAllUsers();
     await add24HoursExecutionTime();
   } catch (err) {
     console.log(err);

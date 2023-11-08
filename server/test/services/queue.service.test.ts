@@ -1,6 +1,12 @@
-import { executeQueueActions } from '../../src/services/queue.service';
+import {
+  checkIfQueueHasUnexecutedAction,
+  executeQueueActions,
+  executeSingleQueueAction,
+  getQueueActionToExecute,
+} from '../../src/services/queue.service';
 import prisma from '../../src/config/prisma';
 import { Queue } from '@prisma/client';
+import { executeUserAction } from '../../src/services/user.service';
 
 jest.mock('../../src/config/prisma', () => ({
   queue: {
@@ -107,5 +113,64 @@ describe('Testing queue.service', () => {
       mockQueue.id
     );
     spy.mockRestore();
+  });
+
+  it('should not execute a single queue action if the user has no credit', async () => {
+    const mockQueue = {
+      id: '1',
+      userId: 'user1',
+      actions: [
+        {
+          actionId: 'action1',
+          addedAt: new Date(),
+          executed: false,
+        },
+      ],
+    } as Queue;
+
+    (executeUserAction as jest.Mock).mockResolvedValueOnce(false);
+
+    await executeSingleQueueAction(mockQueue);
+
+    expect(executeUserAction).toHaveBeenCalledWith(
+      mockQueue.userId,
+      mockQueue.actions[0].actionId
+    );
+  });
+
+  it('should return null if all actions in the queue have been executed', () => {
+    const mockQueue = {
+      id: '1',
+      userId: 'user1',
+      actions: [
+        {
+          actionId: 'action1',
+          addedAt: new Date(),
+          executed: true,
+        },
+      ],
+    } as Queue;
+
+    const result = getQueueActionToExecute(mockQueue);
+
+    expect(result).toBeNull();
+  });
+
+  it('should return false if the queue has no unexecuted actions', () => {
+    const mockQueue = {
+      id: '1',
+      userId: 'user1',
+      actions: [
+        {
+          actionId: 'action1',
+          addedAt: new Date(),
+          executed: true,
+        },
+      ],
+    } as Queue;
+
+    const result = checkIfQueueHasUnexecutedAction(mockQueue);
+
+    expect(result).toBe(false);
   });
 });

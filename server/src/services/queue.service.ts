@@ -1,4 +1,4 @@
-import { Queue, QueueAction } from '@prisma/client';
+import { Queue } from '@prisma/client';
 import prisma from '../config/prisma';
 import { executeUserAction } from './user.service';
 
@@ -26,38 +26,45 @@ export const executeQueueActions = async () => {
   }
 };
 
-const executeSingleQueueAction = async (queue: Queue) => {
+export const executeSingleQueueAction = async (queue: Queue) => {
   if (!checkIfQueueHasUnexecutedAction(queue)) {
     console.log('No unexecuted action found for queue with id', queue.id);
     return;
   }
   const queueAction = getQueueActionToExecute(queue);
-  console.log(
-    'Executing action with id',
-    queueAction.actionId,
-    'for queue with id',
-    queue.id
+
+  queueAction.executed = await executeUserAction(
+    queue.userId,
+    queueAction.actionId
   );
 
-  queueAction.executed = true;
-  queueAction.executedAt = new Date();
-  await executeUserAction(queue.userId, queueAction.actionId);
-
-  const index = queue.actions.findIndex(
-    (action) => action.actionId === queueAction.actionId
-  );
-  queue.actions[index] = queueAction;
-  queue.actions.sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime());
-
-  return await updateQueue(queue);
+  if (queueAction.executed) {
+    queueAction.executedAt = new Date();
+    const index = queue.actions.findIndex(
+      (action) => action.actionId === queueAction.actionId
+    );
+    queue.actions[index] = queueAction;
+    queue.actions.sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime());
+    return await updateQueue(queue);
+  } else {
+    console.log(
+      'Action with id',
+      queueAction.actionId,
+      'for queue with id',
+      queue.id,
+      'could not be executed'
+    );
+    return;
+  }
 };
 
-const getQueueActionToExecute = (queue: Queue) => {
+export const getQueueActionToExecute = (queue: Queue) => {
   const actions = queue.actions.filter((action) => !action.executed);
+  if (actions.length === 0) return null;
   return actions.sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime())[0];
 };
 
-const updateQueue = async (queue: Queue) => {
+export const updateQueue = async (queue: Queue) => {
   return await prisma.queue.update({
     where: {
       id: queue.id,
@@ -70,7 +77,7 @@ const updateQueue = async (queue: Queue) => {
   });
 };
 
-const checkIfQueueHasUnexecutedAction = (queue: Queue) => {
+export const checkIfQueueHasUnexecutedAction = (queue: Queue) => {
   if (!queue.actions) return false;
   if (queue.actions.length === 0) return false;
   return queue.actions.some((action) => !action.executed);

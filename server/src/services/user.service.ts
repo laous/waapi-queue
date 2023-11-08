@@ -33,6 +33,7 @@ const calculateUserActionsCredit = async (user: User, actions: Action[]) => {
 };
 
 export const executeUserAction = async (userId: string, actionId: string) => {
+  if (!userId || !actionId) return;
   const user = await prisma.user.findUnique({
     where: {
       id: userId,
@@ -47,6 +48,13 @@ export const executeUserAction = async (userId: string, actionId: string) => {
       },
     },
   });
+
+  const canExecute = checkIfUserHasCreditForAction(
+    user.actions as UserAction[],
+    actionId
+  );
+
+  if (!canExecute) return false;
 
   const actions = user.actions;
   actions.forEach((action) => {
@@ -64,4 +72,13 @@ export const executeUserAction = async (userId: string, actionId: string) => {
       },
     },
   });
+  return true;
+};
+
+const checkIfUserHasCreditForAction = (
+  actions: UserAction[],
+  actionId: string
+) => {
+  const action = actions.find((action) => action.actionId === actionId);
+  return action && action.credit > 0;
 };
