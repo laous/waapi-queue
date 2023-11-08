@@ -17,9 +17,11 @@ export const executeQueueActions = async () => {
     },
   });
   for (const queue of queues) {
-    console.log('Excuting the task for queue with id', queue.id);
     if (queue && queue.actions.length > 0) {
+      console.log('Excuting the actions of queue with id', queue.id);
       await executeSingleQueueAction(queue as Queue);
+    } else {
+      console.log('No unexecuted action found for queue with id', queue.id);
     }
   }
 };
@@ -41,10 +43,13 @@ const executeSingleQueueAction = async (queue: Queue) => {
   queueAction.executedAt = new Date();
   await executeUserAction(queue.userId, queueAction.actionId);
 
-  queue.actions.push(queueAction);
+  const index = queue.actions.findIndex(
+    (action) => action.actionId === queueAction.actionId
+  );
+  queue.actions[index] = queueAction;
   queue.actions.sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime());
 
-  await updateQueue(queue, queue.actions);
+  return await updateQueue(queue);
 };
 
 const getQueueActionToExecute = (queue: Queue) => {
@@ -52,19 +57,21 @@ const getQueueActionToExecute = (queue: Queue) => {
   return actions.sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime())[0];
 };
 
-const updateQueue = async (queue: Queue, actions: QueueAction[]) => {
-  await prisma.queue.update({
+const updateQueue = async (queue: Queue) => {
+  return await prisma.queue.update({
     where: {
       id: queue.id,
     },
     data: {
       actions: {
-        set: actions,
+        set: queue.actions,
       },
     },
   });
 };
 
 const checkIfQueueHasUnexecutedAction = (queue: Queue) => {
+  if (!queue.actions) return false;
+  if (queue.actions.length === 0) return false;
   return queue.actions.some((action) => !action.executed);
 };

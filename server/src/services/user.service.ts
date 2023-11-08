@@ -1,16 +1,17 @@
-import { User, UserAction } from '@prisma/client';
+import { Action, User, UserAction } from '@prisma/client';
 import prisma from '../config/prisma';
 import { getRandomNumber } from '../util';
 
-export const calcluteUserActionsCreditForAllUsers = async () => {
+export const calculateUserActionsCreditForAllUsers = async () => {
   const users = await prisma.user.findMany();
+  const actions = await prisma.action.findMany();
   for (const user of users) {
-    await calcluteUserActionsCredit(user);
+    await calculateUserActionsCredit(user, actions);
   }
 };
 
-const calcluteUserActionsCredit = async (user: User) => {
-  const actions = await prisma.action.findMany();
+const calculateUserActionsCredit = async (user: User, actions: Action[]) => {
+  if (!actions) return console.log('No actions found');
   const userActions: UserAction[] = actions.map((action) => {
     return {
       actionId: action.id,
