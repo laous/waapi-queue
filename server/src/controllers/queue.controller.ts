@@ -60,7 +60,7 @@ export const addQueueAction = async (req: IRequestUser, res: Response) => {
       return;
     }
 
-    const queue = await prisma.queue.update({
+    await prisma.queue.update({
       where: {
         userId: user.id,
       },
