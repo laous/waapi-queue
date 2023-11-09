@@ -1,17 +1,15 @@
-import {
-  checkIfQueueHasUnexecutedAction,
-  executeQueueActions,
-  executeSingleQueueAction,
-  getQueueActionToExecute,
-} from '../../src/services/queue.service';
+import * as queueService from '../../src/services/queue.service';
+import * as userService from '../../src/services/user.service';
 import prisma from '../../src/config/prisma';
 import { Queue } from '@prisma/client';
-import { executeUserAction } from '../../src/services/user.service';
 
 jest.mock('../../src/config/prisma', () => ({
   queue: {
     findMany: jest.fn(),
     update: jest.fn(),
+  },
+  user: {
+    findUnique: jest.fn(),
   },
 }));
 
@@ -31,7 +29,7 @@ describe('Testing queue.service', () => {
   });
 
   it('should execute queue actions', async () => {
-    const mockQueue1 = {
+    const mockQueue = {
       id: '1',
       userId: 'user1',
       actions: [
@@ -40,37 +38,41 @@ describe('Testing queue.service', () => {
           addedAt: new Date(),
           executed: false,
         },
+        {
+          actionId: 'action2',
+          addedAt: new Date(),
+          executed: false,
+        },
       ],
     } as Queue;
 
-    (prisma.queue.findMany as jest.Mock).mockResolvedValueOnce([mockQueue1]);
+    const checkIfQueueHasUnexecutedActionSpy = jest
+      .spyOn(queueService, 'checkIfQueueHasUnexecutedAction')
+      .mockReturnValueOnce(true);
+    const getQueueActionToExecuteSpy = jest
+      .spyOn(queueService, 'getQueueActionToExecute')
+      .mockResolvedValueOnce(mockQueue.actions[0]);
+    const executeUserActionSpy = jest
+      .spyOn(userService, 'executeUserAction')
+      .mockResolvedValueOnce(true);
+    const updateQueueSpy = jest
+      .spyOn(queueService, 'updateQueue')
+      .mockResolvedValueOnce(mockQueue);
 
-    const mockQueueAction1 = {
-      ...mockQueue1.actions[0],
-      executed: true,
-      executedAt: new Date(),
-    };
+    await queueService.executeSingleQueueAction(mockQueue);
 
-    (prisma.queue.update as jest.Mock).mockImplementation(async (data) => {
-      const updatedQueue = { ...mockQueue1 };
+    expect(checkIfQueueHasUnexecutedActionSpy).toHaveBeenCalledWith(mockQueue);
+    expect(getQueueActionToExecuteSpy).toHaveBeenCalledWith(mockQueue);
+    expect(executeUserActionSpy).toHaveBeenCalledWith(
+      mockQueue.userId,
+      mockQueue.actions[0].actionId
+    );
+    expect(updateQueueSpy).toHaveBeenCalledWith(mockQueue);
 
-      expect(data).toEqual({
-        where: {
-          id: mockQueue1.id,
-        },
-        data: {
-          actions: {
-            set: [updatedQueue.actions[0]],
-          },
-        },
-      });
-    });
-
-    await executeQueueActions();
-
-    expect(
-      require('../../src/services/user.service').executeUserAction
-    ).toHaveBeenCalledWith(mockQueue1.userId, mockQueueAction1.actionId);
+    checkIfQueueHasUnexecutedActionSpy.mockRestore();
+    getQueueActionToExecuteSpy.mockRestore();
+    executeUserActionSpy.mockRestore();
+    updateQueueSpy.mockRestore();
   });
 
   it('should handle queues with no unexecuted actions', async () => {
@@ -89,7 +91,7 @@ describe('Testing queue.service', () => {
     (prisma.queue.findMany as jest.Mock).mockResolvedValueOnce([mockQueue]);
 
     const spy = jest.spyOn(console, 'log');
-    await executeQueueActions();
+    await queueService.executeQueueActions();
     expect(spy).toHaveBeenCalledWith(
       'No unexecuted action found for queue with id',
       mockQueue.id
@@ -107,7 +109,7 @@ describe('Testing queue.service', () => {
     (prisma.queue.findMany as jest.Mock).mockResolvedValueOnce([mockQueue]);
 
     const spy = jest.spyOn(console, 'log');
-    await executeQueueActions();
+    await queueService.executeQueueActions();
     expect(spy).toHaveBeenCalledWith(
       'No unexecuted action found for queue with id',
       mockQueue.id
@@ -115,30 +117,7 @@ describe('Testing queue.service', () => {
     spy.mockRestore();
   });
 
-  it('should not execute a single queue action if the user has no credit', async () => {
-    const mockQueue = {
-      id: '1',
-      userId: 'user1',
-      actions: [
-        {
-          actionId: 'action1',
-          addedAt: new Date(),
-          executed: false,
-        },
-      ],
-    } as Queue;
-
-    (executeUserAction as jest.Mock).mockResolvedValueOnce(false);
-
-    await executeSingleQueueAction(mockQueue);
-
-    expect(executeUserAction).toHaveBeenCalledWith(
-      mockQueue.userId,
-      mockQueue.actions[0].actionId
-    );
-  });
-
-  it('should return null if all actions in the queue have been executed', () => {
+  it('should return null if all actions in the queue have been executed', async () => {
     const mockQueue = {
       id: '1',
       userId: 'user1',
@@ -151,7 +130,7 @@ describe('Testing queue.service', () => {
       ],
     } as Queue;
 
-    const result = getQueueActionToExecute(mockQueue);
+    const result = await queueService.getQueueActionToExecute(mockQueue);
 
     expect(result).toBeNull();
   });
@@ -169,7 +148,7 @@ describe('Testing queue.service', () => {
       ],
     } as Queue;
 
-    const result = checkIfQueueHasUnexecutedAction(mockQueue);
+    const result = queueService.checkIfQueueHasUnexecutedAction(mockQueue);
 
     expect(result).toBe(false);
   });

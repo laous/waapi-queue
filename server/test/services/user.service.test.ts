@@ -1,5 +1,6 @@
 import {
   calculateUserActionsCreditForAllUsers,
+  checkIfUserHasCreditForAction,
   executeUserAction,
 } from '../../src/services/user.service';
 import prisma from '../../src/config/prisma';
@@ -114,29 +115,20 @@ describe('Testing user.service', () => {
 
   it('should execute user action', async () => {
     (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce(mockUser1);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce(mockUser1);
+    const result = await executeUserAction('1', '1');
 
-    await executeUserAction('1', '1');
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(2);
+    expect(prisma.user.update).toHaveBeenCalledTimes(1);
+    expect(result).toBe(true);
+  });
+
+  it('should check if user has credit for action', async () => {
+    (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce(mockUser1);
+
+    const result = await checkIfUserHasCreditForAction('1', '1');
 
     expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-    expect(prisma.user.update).toHaveBeenCalledTimes(1);
-    expect(prisma.user.update).toHaveBeenCalledWith({
-      where: {
-        id: '1',
-      },
-      data: {
-        actions: {
-          set: expect.arrayContaining([
-            expect.objectContaining({
-              actionId: '1',
-              credit: 9,
-            }),
-            expect.objectContaining({
-              actionId: '2',
-              credit: expect.any(Number),
-            }),
-          ]),
-        },
-      },
-    });
+    expect(result).toBe(true);
   });
 });

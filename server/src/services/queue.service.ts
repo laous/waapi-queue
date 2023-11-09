@@ -1,6 +1,9 @@
 import { Queue } from '@prisma/client';
 import prisma from '../config/prisma';
-import { executeUserAction } from './user.service';
+import {
+  checkIfUserHasCreditForAction,
+  executeUserAction,
+} from './user.service';
 
 export const executeQueueActions = async () => {
   const queues = await prisma.queue.findMany({
@@ -31,7 +34,8 @@ export const executeSingleQueueAction = async (queue: Queue) => {
     console.log('No unexecuted action found for queue with id', queue.id);
     return;
   }
-  const queueAction = getQueueActionToExecute(queue);
+
+  const queueAction = await getQueueActionToExecute(queue);
 
   queueAction.executed = await executeUserAction(
     queue.userId,
@@ -58,10 +62,19 @@ export const executeSingleQueueAction = async (queue: Queue) => {
   }
 };
 
-export const getQueueActionToExecute = (queue: Queue) => {
-  const actions = queue.actions.filter((action) => !action.executed);
+export const getQueueActionToExecute = async (queue: Queue) => {
+  let actions = queue.actions.filter((action) => !action.executed);
   if (actions.length === 0) return null;
-  return actions.sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime())[0];
+
+  actions = actions.sort((a, b) => a.addedAt.getTime() - b.addedAt.getTime());
+
+  for (let action of actions) {
+    if (await checkIfUserHasCreditForAction(queue.userId, action.actionId)) {
+      return action;
+    }
+  }
+
+  return null;
 };
 
 export const updateQueue = async (queue: Queue) => {

@@ -34,6 +34,11 @@ const calculateUserActionsCredit = async (user: User, actions: Action[]) => {
 
 export const executeUserAction = async (userId: string, actionId: string) => {
   if (!userId || !actionId) return;
+
+  const canExecute = await checkIfUserHasCreditForAction(userId, actionId);
+
+  if (!canExecute) return false;
+
   const user = await prisma.user.findUnique({
     where: {
       id: userId,
@@ -49,17 +54,20 @@ export const executeUserAction = async (userId: string, actionId: string) => {
     },
   });
 
-  const canExecute = checkIfUserHasCreditForAction(
-    user.actions as UserAction[],
-    actionId
-  );
+  console.log('user', user);
 
-  if (!canExecute) return false;
+  if (!user || !user.actions) {
+    throw new Error('User or user actions not found');
+  }
 
   const actions = user.actions;
   actions.forEach((action) => {
     if (action.actionId === actionId) {
-      action.credit -= 1;
+      if (action.credit > 0) {
+        action.credit = action.credit - 1;
+      } else {
+        return false;
+      }
     }
   });
   await prisma.user.update({
@@ -75,10 +83,18 @@ export const executeUserAction = async (userId: string, actionId: string) => {
   return true;
 };
 
-const checkIfUserHasCreditForAction = (
-  actions: UserAction[],
+export const checkIfUserHasCreditForAction = async (
+  userId: string,
   actionId: string
 ) => {
-  const action = actions.find((action) => action.actionId === actionId);
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      actions: true,
+    },
+  });
+  const action = user.actions.find((action) => action.actionId === actionId);
   return action && action.credit > 0;
 };
