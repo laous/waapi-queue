@@ -46,7 +46,16 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        actions: true,
+        name: true,
+        password: true,
+      },
+    });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -57,7 +66,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET);
-
+    delete user.password;
     res.status(200).json({ user, token });
   } catch (error) {
     console.error(error);

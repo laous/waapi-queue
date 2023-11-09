@@ -11,7 +11,7 @@ export const jwtMiddleware = (
   next: NextFunction
 ) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = authHeader && authHeader.trim().split(' ')[1];
 
   if (!token || !JWT_SECRET)
     return res.sendStatus(401).json({ message: 'Unauthorized' });
