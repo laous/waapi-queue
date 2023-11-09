@@ -32,3 +32,9 @@ export interface IUserAction {
   credit?: number;
   calculatedAt?: Date;
 }
+
+export interface IExecutionTime {
+  id?: string;
+  lastExecutionTime24Hours?: Date;
+  lastExecutionTime2Minutes?: Date;
+}

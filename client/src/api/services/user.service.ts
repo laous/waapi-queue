@@ -1,11 +1,14 @@
+import { getAxios } from '..';
 import { IAction, IUser, IUserAction } from '../../types';
 import { getActions } from './action.service';
 
-export const getUserActions = async (): Promise<IUserAction[]> => {
-  const localStorageUser = localStorage.getItem('user');
-  if (!localStorageUser) return [];
+const API_BASE_URL = '/user';
 
-  const user = JSON.parse(localStorageUser) as IUser;
+const axios = getAxios();
+
+export const getUserActions = async (): Promise<IUserAction[]> => {
+  const user = await getUser();
+  if (!user) return [];
 
   const actions: IAction[] = await getActions();
   const userActions = user.actions;
@@ -18,4 +21,16 @@ export const getUserActions = async (): Promise<IUserAction[]> => {
     };
   });
   return updatedUserActions;
+};
+
+const getUser = async (): Promise<IUser> => {
+  const res = await axios.get(`${API_BASE_URL}`);
+  const user: IUser = res.data;
+  if (!user) {
+    return localStorage.getItem('user')
+      ? JSON.parse(localStorage.getItem('user')!)
+      : null;
+  }
+  localStorage.setItem('user', JSON.stringify(user));
+  return user;
 };

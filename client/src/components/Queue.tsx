@@ -9,6 +9,7 @@ const Queue = () => {
   const queue = useQuery({
     queryKey: ['queue'],
     queryFn: getQueue,
+    refetchInterval: 1000 * 60,
   });
 
   const { isSuccess } = queue;
