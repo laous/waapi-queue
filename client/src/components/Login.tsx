@@ -22,7 +22,9 @@ const Login = () => {
     resolver: zodResolver(loginSchema),
   });
   const onSubmit = async (data: LoginSchema) => {
-    await login(data.email, data.password);
+    await login(data.email, data.password).catch((err) => {
+      alert(err.response.data.message);
+    });
     navigate('/');
     reset();
   };
