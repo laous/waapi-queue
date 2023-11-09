@@ -1,28 +1,29 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { login } from '../api/services/auth.service';
+import { createNewAccount } from '../api/services/auth.service';
 import { Link, useNavigate } from 'react-router-dom';
 
-const loginSchema = z.object({
+const registerSchema = z.object({
+  name: z.string().min(3, { message: 'Name is too short' }),
   email: z.string().email(),
   password: z.string().min(6, { message: 'Password is too short' }),
 });
 
-type LoginSchema = z.infer<typeof loginSchema>;
+type RegisterSchema = z.infer<typeof registerSchema>;
 
-const Login = () => {
+const Register = () => {
   const navigate = useNavigate();
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<LoginSchema>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<RegisterSchema>({
+    resolver: zodResolver(registerSchema),
   });
-  const onSubmit = async (data: LoginSchema) => {
-    await login(data.email, data.password);
+  const onSubmit = async (data: RegisterSchema) => {
+    await createNewAccount(data.name, data.email, data.password);
     navigate('/');
     reset();
   };
@@ -35,12 +36,31 @@ const Login = () => {
           alt="Waapi"
         />
         <h2 className="mt-10 text-2xl font-bold leading-9 tracking-tight text-center text-gray-900">
-          Sign in to your account
+          Create a new account
         </h2>
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium leading-6 text-gray-900"
+            >
+              Name
+            </label>
+            <div className="mt-2">
+              <input
+                {...register('name')}
+                name="name"
+                type="name"
+                className="p-1 caret-pink-500 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              />
+              {errors.name && (
+                <p className="text-xs text-red-500">{errors.name.message}</p>
+              )}
+            </div>
+          </div>
           <div>
             <label
               htmlFor="email"
@@ -94,10 +114,10 @@ const Login = () => {
               Sign in
             </button>
             <Link
-              to={'/register'}
+              to={'/login'}
               className="self-end text-xs text-blue-600 hover:underline dark:text-blue-500"
             >
-              {'->'} Don't have an account?
+              {'->'} Already have an account?
             </Link>
           </div>
         </form>
@@ -105,4 +125,4 @@ const Login = () => {
     </div>
   );
 };
-export default Login;
+export default Register;

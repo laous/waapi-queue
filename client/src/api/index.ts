@@ -3,14 +3,23 @@ import axios, { AxiosInstance } from 'axios';
 let axiosInstance: AxiosInstance | null = null;
 
 const createInstance = () => {
-  return axios.create({
+  const instance = axios.create({
     baseURL: import.meta.env.VITE_API_URL as string,
     headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
       'Content-Type': 'application/json',
-      timeout: 1000,
     },
+    timeout: 1000,
   });
+
+  instance.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
+
+  return instance;
 };
 
 export const getAxios = (): AxiosInstance => {

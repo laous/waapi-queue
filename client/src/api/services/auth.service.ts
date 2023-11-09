@@ -4,7 +4,7 @@ const API_BASE_URL = '/auth';
 
 const axios = getAxios();
 
-export const register = async (
+export const createNewAccount = async (
   name: string,
   email: string,
   password: string
