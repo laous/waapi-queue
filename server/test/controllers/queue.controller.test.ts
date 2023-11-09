@@ -77,8 +77,6 @@ describe('Testing queue.controller', () => {
     (prisma.queue.findFirst as jest.Mock).mockResolvedValueOnce(mockQueue);
     const response = await request(app).get('/queue');
 
-    console.log(response.body);
-
     expect(response.status).toBe(200);
     expect(JSON.stringify(response.body)).toEqual(JSON.stringify(mockQueue));
   });

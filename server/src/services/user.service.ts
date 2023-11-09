@@ -54,8 +54,6 @@ export const executeUserAction = async (userId: string, actionId: string) => {
     },
   });
 
-  console.log('user', user);
-
   if (!user || !user.actions) {
     throw new Error('User or user actions not found');
   }
