@@ -37,6 +37,11 @@ export const executeSingleQueueAction = async (queue: Queue) => {
 
   const queueAction = await getQueueActionToExecute(queue);
 
+  if (!queueAction) {
+    console.log('No action found to execute for queue with id', queue.id);
+    return;
+  }
+
   queueAction.executed = await executeUserAction(
     queue.userId,
     queueAction.actionId

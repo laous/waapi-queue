@@ -48,9 +48,9 @@ cron.schedule('*/2 * * * *', async () => {
   }
 });
 
-cron.schedule('30 10 * * *', async () => {
+cron.schedule('40 22 * * *', async () => {
   try {
-    console.log('Calculate user actions new credit every 24 hours at 10.30 PM');
+    console.log('Calculate user actions new credit every 24 hours at 10.40 PM');
     await calculateUserActionsCreditForAllUsers();
     await add24HoursExecutionTime();
   } catch (err) {

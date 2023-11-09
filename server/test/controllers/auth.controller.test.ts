@@ -16,6 +16,10 @@ jest.mock('../../src/config/prisma', () => ({
   user: {
     findUnique: jest.fn(),
     create: jest.fn(),
+    update: jest.fn(),
+  },
+  action: {
+    findMany: jest.fn(),
   },
 }));
 
@@ -64,6 +68,8 @@ describe('Testing auth.controller', () => {
   it('should register a new user', async () => {
     (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce(null);
     (prisma.user.create as jest.Mock).mockResolvedValueOnce(mockUser);
+    (prisma.action.findMany as jest.Mock).mockResolvedValueOnce([]);
+    (prisma.user.update as jest.Mock).mockResolvedValueOnce(mockUser);
 
     const response = await request(app).post('/register');
 

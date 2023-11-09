@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/prisma';
+import { calculateUserActionsCreditForUser } from '../services/user.service';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -34,7 +35,8 @@ export const register = async (req: Request, res: Response) => {
     });
 
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET);
-
+    await calculateUserActionsCreditForUser(user);
+    delete user.password;
     res.status(201).json({ user, token });
   } catch (error) {
     console.error(error);

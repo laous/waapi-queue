@@ -20,7 +20,7 @@ const calculateUserActionsCredit = async (user: User, actions: Action[]) => {
     };
   });
 
-  await prisma.user.update({
+  return await prisma.user.update({
     where: {
       id: user.id,
     },
@@ -30,6 +30,11 @@ const calculateUserActionsCredit = async (user: User, actions: Action[]) => {
       },
     },
   });
+};
+
+export const calculateUserActionsCreditForUser = async (user: User) => {
+  const actions = await prisma.action.findMany();
+  return await calculateUserActionsCredit(user, actions);
 };
 
 export const executeUserAction = async (userId: string, actionId: string) => {
