@@ -15,7 +15,7 @@ import {
   add2MinExecutionTime,
   initializeExecutionTime,
 } from './services/execution-time.service';
-import { initializeActions } from 'services/action.service';
+import { initializeActions } from './services/action.service';
 
 dotenv.config();
 
