@@ -1,7 +1,7 @@
-import { IUserAction } from '../types';
+import { IUserAction } from '../../types';
 import { AiOutlineAppstoreAdd } from 'react-icons/ai';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addActionToQueue } from '../api/services/queue.service';
+import { addActionToQueue } from '../../api/services/queue.service';
 
 interface UserActionsItemProps {
   item: IUserAction;

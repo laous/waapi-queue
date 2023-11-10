@@ -1,4 +1,4 @@
-import { getUserActions } from '../api/services/user.service';
+import { getUserActions } from '../../api/services/user.service';
 import UserActionsItem from './UserActionsItem';
 import { useQuery } from '@tanstack/react-query';
 

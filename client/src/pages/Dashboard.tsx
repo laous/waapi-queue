@@ -1,7 +1,7 @@
-import Footer from '../components/Footer';
-import Header from '../components/Header';
-import Queue from '../components/Queue';
-import UserActions from '../components/UserActions';
+import Footer from '../components/layout/Footer';
+import Header from '../components/layout/Header';
+import Queue from '../components/dashboard/Queue';
+import UserActions from '../components/dashboard/UserActions';
 
 const Dashboard = () => {
   return (

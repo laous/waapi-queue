@@ -1,4 +1,4 @@
-import { IQueueAction } from '../types';
+import { IQueueAction } from '../../types';
 import moment from 'moment';
 
 interface QueueItemProps {

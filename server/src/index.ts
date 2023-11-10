@@ -15,6 +15,7 @@ import {
   add2MinExecutionTime,
   initializeExecutionTime,
 } from './services/execution-time.service';
+import { initializeActions } from 'services/action.service';
 
 dotenv.config();
 
@@ -61,6 +62,7 @@ cron.schedule('40 22 * * *', async () => {
 app.listen(port, async () => {
   console.log(`Server running at http://localhost:${port}`);
   await initializeExecutionTime();
+  await initializeActions();
 });
 
 export default app;

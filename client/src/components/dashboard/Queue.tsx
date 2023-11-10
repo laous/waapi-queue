@@ -1,4 +1,4 @@
-import { getQueue } from '../api/services/queue.service';
+import { getQueue } from '../../api/services/queue.service';
 import QueueItem from './QueueItem';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';

@@ -1,4 +1,4 @@
-import { getExecutionTime } from '../api/services/execution-time.service';
+import { getExecutionTime } from '../../api/services/execution-time.service';
 import { useQuery } from '@tanstack/react-query';
 import Countdown from 'react-countdown';
 import { useState, useEffect } from 'react';

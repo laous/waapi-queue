@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { logout } from '../api/services/auth.service';
+import { logout } from '../../api/services/auth.service';
 
 const Header = () => {
   const navigate = useNavigate();
