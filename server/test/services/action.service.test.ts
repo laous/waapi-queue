@@ -25,12 +25,12 @@ describe('Testing action.service', () => {
         {
           id: '1',
           name: 'Action 1',
-          maxCredits: 20,
+          maxCredits: 26,
         },
         {
           id: '2',
           name: 'Action 2',
-          maxCredits: 20,
+          maxCredits: 32,
         },
       ],
     });
