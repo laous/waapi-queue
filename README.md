@@ -2,6 +2,8 @@
 
 ## Tech Stack
 
+- Node v18.7.0
+
 ### Backend
 
 - Typescript
