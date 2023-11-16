@@ -8,6 +8,17 @@ jest.mock('../../src/config/prisma', () => ({
   },
 }));
 
+const DEFAULT_ACTIONS = [
+  {
+    name: 'Action 1',
+    maxCredits: 26,
+  },
+  {
+    name: 'Action 2',
+    maxCredits: 32,
+  },
+];
+
 describe('Testing action.service', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -21,34 +32,14 @@ describe('Testing action.service', () => {
     expect(prisma.action.findMany).toHaveBeenCalledTimes(1);
     expect(prisma.action.createMany).toHaveBeenCalledTimes(1);
     expect(prisma.action.createMany).toHaveBeenCalledWith({
-      data: [
-        {
-          id: '1',
-          name: 'Action 1',
-          maxCredits: 26,
-        },
-        {
-          id: '2',
-          name: 'Action 2',
-          maxCredits: 32,
-        },
-      ],
+      data: DEFAULT_ACTIONS,
     });
   });
 
   it('should not initialize actions', async () => {
-    (prisma.action.findMany as jest.Mock).mockResolvedValueOnce([
-      {
-        id: '1',
-        name: 'Action 1',
-        maxCredits: 20,
-      },
-      {
-        id: '2',
-        name: 'Action 2',
-        maxCredits: 20,
-      },
-    ]);
+    (prisma.action.findMany as jest.Mock).mockResolvedValueOnce(
+      DEFAULT_ACTIONS
+    );
 
     await initializeActions();
 
